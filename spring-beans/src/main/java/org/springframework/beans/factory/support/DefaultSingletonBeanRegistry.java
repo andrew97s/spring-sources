@@ -212,12 +212,16 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+				// 添加bean至 currentBeanInCreation set 防止bean 并发创建
 				beforeSingletonCreation(beanName);
+
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
 				if (recordSuppressedExceptions) {
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
+
+				// 核心 通过singletonFactory 对象创建bean实例
 				try {
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;

@@ -255,16 +255,22 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.debug("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			// 处理bean为factoryBean 的情况
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
+		// bean 为空
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+
+
+			// 非单列bean 不允许循环依赖 抛出异常
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
+			// 尝试从父beanFactory 加载bean
 			// Check if bean definition exists in this factory.
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
@@ -292,6 +298,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
+				// 处理dependsOn的bean的加载
 				// Guarantee initialization of beans that the current bean depends on.
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
@@ -311,10 +318,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					}
 				}
 
+				// 创建bean对应实例对象
 				// Create bean instance.
 				if (mbd.isSingleton()) {
+					// 指定的beanFactory为匿名函数
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							// singletonFactory 通过 beanName , rootBeanDefinition , args 创建bean 实例
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
@@ -494,7 +504,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		// Check manually registered singletons.
 		Object beanInstance = getSingleton(beanName, false);
+
+		// 当前存在已完成加载的bean
 		if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
+
+			// FactoryBean
 			if (beanInstance instanceof FactoryBean) {
 				if (!BeanFactoryUtils.isFactoryDereference(name)) {
 					Class<?> type = getTypeForFactoryBean((FactoryBean<?>) beanInstance);
@@ -504,6 +518,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					return typeToMatch.isInstance(beanInstance);
 				}
 			}
+			// beanName 非 FactoryBean 反引用（&开头）
 			else if (!BeanFactoryUtils.isFactoryDereference(name)) {
 				if (typeToMatch.isInstance(beanInstance)) {
 					// Direct match for exposed instance?

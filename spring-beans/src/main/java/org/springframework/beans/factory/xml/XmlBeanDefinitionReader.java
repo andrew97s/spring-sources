@@ -508,7 +508,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @throws BeanDefinitionStoreException in case of parsing errors
 	 * @see #loadBeanDefinitions
 	 * @see #setDocumentReaderClass
-	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
+	 * @see BeanDefinitionDocumentReader#
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();

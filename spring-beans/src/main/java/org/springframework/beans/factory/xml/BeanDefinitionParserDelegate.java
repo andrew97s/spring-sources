@@ -415,12 +415,14 @@ public class BeanDefinitionParserDelegate {
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
+		// 别名 默认 以 , ; 分隔
 		List<String> aliases = new ArrayList<>();
 		if (StringUtils.hasLength(nameAttr)) {
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 			aliases.addAll(Arrays.asList(nameArr));
 		}
 
+		// bean name 默认取 id ， id 为空则取beanName 的 第一个别名
 		String beanName = id;
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
 			beanName = aliases.remove(0);
@@ -430,6 +432,7 @@ public class BeanDefinitionParserDelegate {
 			}
 		}
 
+		// 检查beanName 是否唯一 & 添加beanName 至 usedBeanNames
 		if (containingBean == null) {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
@@ -514,6 +517,7 @@ public class BeanDefinitionParserDelegate {
 		try {
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
+			// beanDefinition 的基本属性 initMethod , destroyMethod , autowiredMode , lazyInit 等属性 。。。
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
 

@@ -17,7 +17,10 @@ public class SimpleBeanTest {
 		XmlBeanFactory beanFactory = new XmlBeanFactory(new ClassPathResource("andrew/SimpleBeanTest.xml"));
 
 		SimpleBean bean = beanFactory.getBean(SimpleBean.class);
-		bean.setTestStr("hello spring !");
+//		bean.setTestStr("hello spring !");
 		System.out.println(bean.getTestStr());
+
+		System.out.println(beanFactory.getBean("bean1") == beanFactory.getBean("bean2"));
+		System.out.println( beanFactory.getBean("bean2") == beanFactory.getBean("bean3"));
 	}
 }

@@ -405,10 +405,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		List<String> result = new ArrayList<>();
 
 		// Check all bean definitions.
+		/// 对beanDefinition 遍历
 		for (String beanName : this.beanDefinitionNames) {
+			// 仅仅针对非别名的beanName
 			// Only consider bean as eligible if the bean name is not defined as alias for some other bean.
 			if (!isAlias(beanName)) {
 				try {
+					// GenericBeanDefinition 转 RootBeanDefinition
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 					// Only check bean definition if it is complete.
 					if (!mbd.isAbstract() && (allowEagerInit ||
@@ -831,10 +834,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
+			// bean 开始创建了 需要同步处理 beanDefinitionMap 加上对于的beanDefinition
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);
+
+					// 为保证集合迭代的稳定性 故 不能修改集合 ， 只能覆盖
+					// beanDefinitionNames 为volatile 修饰的ArrayList 只能保证可见性不能保证原子性 故 使用new ArrayList()覆盖
 					List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
 					updatedDefinitions.addAll(this.beanDefinitionNames);
 					updatedDefinitions.add(beanName);
@@ -855,6 +862,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.frozenBeanDefinitionNames = null;
 		}
 
+		// 已存在的bean 需要重置（即把已存在的beanDefinition的生成结果全部清空）
 		if (existingDefinition != null || containsSingleton(beanName)) {
 			resetBeanDefinition(beanName);
 		}
@@ -995,6 +1003,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@Nullable
 	private <T> NamedBeanHolder<T> resolveNamedBean(Class<T> requiredType, @Nullable Object... args) throws BeansException {
 		Assert.notNull(requiredType, "Required type must not be null");
+
+		// 根据beanType 获取候选beanNames
 		String[] candidateNames = getBeanNamesForType(requiredType);
 
 		if (candidateNames.length > 1) {
@@ -1011,6 +1021,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		if (candidateNames.length == 1) {
 			String beanName = candidateNames[0];
+
+			// 主动加载bean 入口
 			return new NamedBeanHolder<>(beanName, getBean(beanName, requiredType, args));
 		}
 		else if (candidateNames.length > 1) {

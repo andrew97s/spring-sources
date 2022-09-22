@@ -30,6 +30,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
 /**
+ * spring 默认使用的别名注册器
+ *
  * Simple implementation of the {@link AliasRegistry} interface.
  * Serves as base class for
  * {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
@@ -52,6 +54,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 		Assert.hasText(name, "'name' must not be empty");
 		Assert.hasText(alias, "'alias' must not be empty");
 		synchronized (this.aliasMap) {
+			// 别名等于 beanName 则 移除对于别名
 			if (alias.equals(name)) {
 				this.aliasMap.remove(alias);
 				if (logger.isDebugEnabled()) {
