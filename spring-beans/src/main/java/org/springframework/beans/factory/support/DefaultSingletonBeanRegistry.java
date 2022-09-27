@@ -174,15 +174,33 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		// 先从缓存beanMap 取 （singletonObjects 缓存已经创建完毕的bean）
 		Object singletonObject = this.singletonObjects.get(beanName);
+
+		// 为空 或者 bean正在创建 （创建中的bean 会被保存在singletonsCurrentlyInCreation set 中）
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+
+			// 加锁
 			synchronized (this.singletonObjects) {
+
+				// 尝试从 提前暴露的bean缓存 取bean (此时的bean还未完全初始化)
 				singletonObject = this.earlySingletonObjects.get(beanName);
+
+				// 为空 且 允许提前引用（则尝试对bean进行实例化 并将bean放入 提前引用的缓存中）
 				if (singletonObject == null && allowEarlyReference) {
+
+					// 尝试从beanFactories 取 （bean都是通过beanFactory 实例化的）
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
+
+						// bean factory 实例化出一个bean对象
+						// （此时的bean仅仅完成了实例化 其属性为空 需要经过初始化的过程 才能成为一个可用的bean对象）
 						singletonObject = singletonFactory.getObject();
+
+						// 将实例化的bean 放入 提前引用的缓存中
 						this.earlySingletonObjects.put(beanName, singletonObject);
+
+						// 移除bean factory 单例模式bean仅能被实例化一次 故需要删除实例化bean 的 factory
 						this.singletonFactories.remove(beanName);
 					}
 				}

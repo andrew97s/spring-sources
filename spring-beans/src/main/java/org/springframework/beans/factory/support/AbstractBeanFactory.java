@@ -270,7 +270,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
-			// 尝试从父beanFactory 加载bean
+			// 当前beanFactory 不包含 beanDefinition 则尝试从父beanFactory 加载bean
 			// Check if bean definition exists in this factory.
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
@@ -321,7 +321,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				// 创建bean对应实例对象
 				// Create bean instance.
 				if (mbd.isSingleton()) {
-					// 指定的beanFactory为匿名函数
+					// 指定的beanFactory为匿名函数(由此开始bean 的创建) 返回的sharedInstance 已经是一个可用的bean实例
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							// singletonFactory 通过 beanName , rootBeanDefinition , args 创建bean 实例
@@ -338,6 +338,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
+				// protoType 类型的bean 创建（每次都返回一个新的bean 实例）
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
@@ -351,6 +352,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
 				}
 
+				// 其他 scope 类型bean加载
 				else {
 					String scopeName = mbd.getScope();
 					if (!StringUtils.hasLength(scopeName)) {
@@ -386,9 +388,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 		}
 
+		// 检查创建的bean 是否为 要求的bean class type
 		// Check if required type matches the type of the actual bean instance.
 		if (requiredType != null && !requiredType.isInstance(bean)) {
 			try {
+				// 尝试利用 beanTypeConverter 进行转换
 				T convertedBean = getTypeConverter().convertIfNecessary(bean, requiredType);
 				if (convertedBean == null) {
 					throw new BeanNotOfRequiredTypeException(name, requiredType, bean.getClass());
@@ -1643,6 +1647,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected Object getObjectForBeanInstance(
 			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
 
+		// 判断是否需要获取factoryBean对象实例
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
 		if (BeanFactoryUtils.isFactoryDereference(name)) {
 			if (beanInstance instanceof NullBean) {
@@ -1660,8 +1665,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			return beanInstance;
 		}
 
+		// 一下则获取factoryBean下包含的bean对象
 		Object object = null;
 		if (mbd == null) {
+			// factoryBean 缓存
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
@@ -1672,6 +1679,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+
+			// 通过factoryBean 获取bean对象
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
 		return object;
