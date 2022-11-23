@@ -385,6 +385,9 @@ public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedence
 
 		int numUnboundArgs = this.parameterTypes.length;
 		Class<?>[] parameterTypes = this.aspectJAdviceMethod.getParameterTypes();
+
+		// 尝试 绑定joinPoint 、 proceedingJoinPoint 、 joinPointStaticPart 参数至增强方法
+		// 非第一个AOP参数 绑定不上增强方法 ?
 		if (maybeBindJoinPoint(parameterTypes[0]) || maybeBindProceedingJoinPoint(parameterTypes[0]) ||
 				maybeBindJoinPointStaticPart(parameterTypes[0])) {
 			numUnboundArgs--;
@@ -561,6 +564,9 @@ public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedence
 	protected Object[] argBinding(JoinPoint jp, @Nullable JoinPointMatch jpMatch,
 			@Nullable Object returnValue, @Nullable Throwable ex) {
 
+		// 动态绑定参数至增强方法
+
+
 		calculateArgumentBindings();
 
 		// AMC start
@@ -639,6 +645,8 @@ public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedence
 			actualArgs = null;
 		}
 		try {
+
+			// AOP 真正调用增强方法的对象是aspect对象而非被增强对象自己 ?
 			ReflectionUtils.makeAccessible(this.aspectJAdviceMethod);
 			// TODO AopUtils.invokeJoinpointUsingReflection
 			return this.aspectJAdviceMethod.invoke(this.aspectInstanceFactory.getAspectInstance(), actualArgs);

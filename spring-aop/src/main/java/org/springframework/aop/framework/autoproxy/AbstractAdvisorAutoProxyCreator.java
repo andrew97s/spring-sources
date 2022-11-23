@@ -91,10 +91,20 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+
+		// 获取beanFactory 内 所有 advisor bean的实现（已经完成初始化的bean）
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+
+		// 遍历所有advisor & 获取支持增强当前bean的advisorList
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+
+
+		// 支持子类进行扩展
 		extendAdvisors(eligibleAdvisors);
+
 		if (!eligibleAdvisors.isEmpty()) {
+
+			// aop 增强进行排序 （默认 通过 ordered 接口进行排序）
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;
