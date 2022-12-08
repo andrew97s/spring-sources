@@ -131,7 +131,8 @@ public class DispatcherServletTests {
 
 	@Test
 	public void requestHandledEvent() throws Exception {
-		MockHttpServletRequest request = new MockHttpServletRequest(getServletContext(), "GET", "/locale.do");
+		MockHttpServletRequest request = new MockHttpServletRequest(
+				getServletContext(), "GET", "/locale.do");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		complexDispatcherServlet.service(request, response);
 		ComplexWebApplicationContext.TestApplicationListener listener =

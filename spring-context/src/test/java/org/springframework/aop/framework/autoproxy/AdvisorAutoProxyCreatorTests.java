@@ -19,11 +19,11 @@ package org.springframework.aop.framework.autoproxy;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.springframework.aop.aspectj.autoproxy.target.AbstractBeanFactoryBasedTargetSourceCreator;
 import test.mixin.Lockable;
 
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aop.framework.autoproxy.target.AbstractBeanFactoryBasedTargetSourceCreator;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.aop.target.CommonsPool2TargetSource;
